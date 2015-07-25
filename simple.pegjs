@@ -1,6 +1,21 @@
+{
+    function join(start, rest, n) {
+        var result = [start];
+
+        if (rest.length) {
+            var i = -1;
+            var len = rest.length;
+            while(++i < len) {
+                result.push(rest[i][n]);
+            }
+        }
+
+        return result;
+    }
+}
 
 start
-    = add
+    = expr
 
 add
     = left:sub ws* '+' ws* right:add { return {type: 'add', value:[left, right] }; }
@@ -35,10 +50,11 @@ neg
     / val
 
 expr
-    = target:(pos) filters:filters* " " * { return {type: 'expr', value:[target].concat(filters) }; }
+    = target:(pos) filters:filters+ " "* { return {type: 'expr', value:[target].concat(filters) }; }
+    / pos
 
 val
-    = pointer / primitive / array / group
+    = pointer / array / group
 
 group
     = '(' ws* value:add ws* ')' {return {type: 'group', value: value}; }
@@ -47,13 +63,17 @@ filters
     =  ws* "|" ws* filter:literal args:(filter_args)* {return {type: 'filter', value:[filter].concat(args) }};
 
 filter_args
-    = " "+ value:(pointer / primitive / array / group) { return {type: 'arg', value: value}; }
+    = " "+ value:(filter_arg) { return {type: 'arg', value: value}; }
+
+filter_arg
+    = pointer / primitive / array / group
+
 
 primitive
 	= float / integer / bool / null / string
 
 float
-	= pre:number "." post:digit { return {type: 'float', value: parseFloat((sign ? sign[0] : '') + pre + '.' + post, 10)} ; }
+	= pre:number "." post:digit { return {type: 'float', value: parseFloat(pre + '.' + post, 10)} ; }
 
 integer
 	=  pre:number { return {type: 'integer', value: parseInt(pre, 10) }; }
@@ -75,7 +95,11 @@ undefined
     = "undefined" { return {type:'undefined'}; }
 
 ws "whitespace"
-    = ' ' / '\t'
+    = ' '
+    / '\t'
+    / '\v'
+_
+   = ws*
 
 string
     = '"' str:(escape / '\\"' / [^\\"\n] )* '"' { return {type: 'string', value: str.join('')}; }
@@ -91,14 +115,21 @@ escape
 	= '\\\\' / '\\t' / '\\n' / '\\.' / '\\r'
 
 pointer
-    = begin:(float / integer / string / bool / literal / array / group) path:(path)* { return {type: 'pointer', value: [begin].concat(path) }; }
+    = begin:(point / literal) path:(path)+ { return {type: 'pointer', value: [begin].concat(path) }; }
+    / point
+    / value:literal { return {type:'pointer', value: [value]}; }
+
+point
+    = float / integer / string / bool / null / array / group
 
 array
-    = '[' ws* first:(list_value) others:(list_items)* ws* ']' { return { type: 'array', value: [first].concat(others) }; }
+    = '[' _ value:(arg_list _)? ']' { return {type: 'array', value: value ? value[0] : []}; }
 
 args
-    = '(' ws* first:(list_value) others:(list_items)* ws* ')' { return {type: 'args', value: [first].concat(others) }; }
-    / '(' ws* value:(list_value)? ws* ')' { return {type: 'args', value: value ? [value]:[]}; }
+    = '(' _ value:(arg_list _)? ')' { return {type: 'args', value: value ? value[0] : []}; }
+
+arg_list
+    = first:list_value _ others:(',' _ others:list_value _)* { return join(first, others, 2); }
 
 path
     = path_literal
@@ -108,10 +139,10 @@ path
 path_literal
     = '.' value:literal { return value; }
 
-index = '[' ' '* value:(path_list / path_index / path_range ) ' '* ']' { return {type:'index', value:value}; }
+index = '[' ' '* value:(path_list / path_index / path_range ) ' '* ']' { return value; }
 
 path_index
-    = add
+    = value:add !(_ ',' / _ '..') { return {type:'index', value:value}; }
 
 path_range
     = start:(integer / pointer) '..' end:(integer / pointer)? { return {type: 'range', value:[start, end]}; };
@@ -127,3 +158,11 @@ list_value
 
 literal
     = a:[A-Za-z_$] b:([A-Za-z0-9_$]*) { return {type: 'literal', value: a + b.join('')}; }
+
+operators
+    = '+'
+    / '-'
+    / '*'
+    / '/'
+    / '%'
+    / '^'

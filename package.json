@@ -1,5 +1,13 @@
 {
   "dependencies": {
     "pegjs": "~0.8.0"
+  },
+  "devDependencies": {
+    "mocha": "~2.2.5",
+    "should": "~7.0.2"
+  },
+  "scripts": {
+    "build-simple": "node peg.js build simple.pegjs  simple.txt > simple/parser.js",
+    "test-simple": "node_modules/.bin/mocha simple/test.spec.js"
   }
 }

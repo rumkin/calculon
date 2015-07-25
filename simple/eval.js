@@ -9,6 +9,10 @@ void function () {
     };
     exports.eval = exports.new();
 
+    var exprTokens = [
+        'expr', 'pow', 'add', 'sub', 'del', 'mul', 'mod', 'pos', 'neg', 'group'
+    ];
+
     function newEvaluator(options) {
         options = options || {
             primitives: false
@@ -18,7 +22,7 @@ void function () {
             var ast = parser.parse(expression);
             scope = scope || {};
 
-            return expr(ast, scope);
+            return x(ast, scope);
         }
 
         function filter(filters, value, scope) {
@@ -57,7 +61,7 @@ void function () {
         }
 
         function x(token, scope, context) {
-            return isExpression(token) ? expr(token, scope, true) : extract(token, scope, arguments.length > 2 ? context : scope);
+            return isExpression(token) ? expr(token, scope) : extract(token, scope, arguments.length > 2 ? context : scope);
         }
 
         // Something very odd but it's 07:09. So who cares...
@@ -201,8 +205,7 @@ void function () {
 
                         if (isExpression(token)) {
                             index = expr(token, scope);
-                        } else
-                        if (token.type === 'pointer' || token.type === 'array') {
+                        } else if (token.type === 'pointer' || token.type === 'array') {
                             index = extract(token, scope, scope);
                         } else {
                             index = token.value;
@@ -270,12 +273,13 @@ void function () {
                         var keys = [];
 
                         while (items.length) {
-                            index = extract(items[0], scope, result);
+                            index = x(items[0], scope);
 
                             if (result.hasOwnProperty(index)) {
                                 keys.push(index);
-                                items.shift();
                             }
+
+                            items.shift();
                         }
 
                         result = pick(keys, result);
@@ -331,10 +335,6 @@ void function () {
             return target !== null && typeof target !== 'object';
         }
 
-        var exprTokens = [
-            'expr', 'pow', 'add', 'sub', 'del', 'mul', 'mod', 'pos', 'neg'
-        ];
-
         function isExpression(token) {
            return exprTokens.indexOf(token.type) > -1;
         }
@@ -351,7 +351,8 @@ void function () {
             return flat;
         }
 
-        evaluate.expr = expr;
+        evaluate.x = x;
+        evaluate.parse = parser.parse;
         return evaluate;
     }
 

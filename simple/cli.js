@@ -87,11 +87,13 @@ var scope = {
     dump: function(value) {
         console.log(value);
         return value;
-    }
+    },
+    neg : -1
 };
 
 var start = Date.now();
 var times = parseInt(process.argv[3]) || 1;
+var parses = parseInt(process.argv[4]) || 1;
 var source = process.argv[2];
 
 //for (var i = 0, l = 100; i < l; i++) {
@@ -117,14 +119,19 @@ var eval2 = simple.new({
 });
 //
 
-var result = simple.parse(source);
-//console.log(result);
-var out;
-for (var i = 0, l = times; i < l; i++) {
-    out = eval2.expr(result, scope);
+var ast;
+while(parses--) {
+    ast = simple.parse(source);
 }
 
-console.log(out);
+console.log(JSON.stringify(ast, null, 2));
+
+var out;
+for (var i = 0, l = times; i < l; i++) {
+    out = eval2.x(ast, scope);
+}
+
+console.log('>', out);
 
 var end = Date.now() - start;
 console.log('Time: %d sec, %d msec/ops', end/1000, end/times);
