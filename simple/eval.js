@@ -56,29 +56,31 @@ void function () {
             return value;
         }
 
+        function x(token, scope, context) {
+            return isExpression(token) ? expr(token, scope, true) : extract(token, scope, arguments.length > 2 ? context : scope);
+        }
+
         // Something very odd but it's 07:09. So who cares...
         function expr(ast, scope, inner) {
             var value, left, right;
 
             switch(ast.type) {
                 case 'expr':
-                    value = extract(ast.value[0], scope, scope);
+                    value = x(ast.value[0], scope);
                     value = filter(ast.value.slice(1), value, scope);
                     return value;
                 case 'group':
-                    value = expr(ast.value, scope);
+                    value = x(ast.value, scope);
                     return value;
-                case 'not':
-                    return !expr(ast.value, scope);
                 case 'pos':
-                    return +expr(ast.value, scope);
+                    return +x(ast.value, scope);
                     break;
                 case 'neg':
-                    return -expr(ast.value, scope);
+                    return -x(ast.value, scope);
                     break;
                 default:
-                    left = expr(ast.value[0], scope, true);
-                    right = expr(ast.value[1], scope, true);
+                    left = x(ast.value[0], scope);
+                    right = x(ast.value[1], scope);
 
                     value = [left, ast.type, right];
             }
@@ -125,10 +127,11 @@ void function () {
             return value[0];
         }
 
+
         function extract(ast, scope, context) {
             if (ast.type === 'array') {
                 return ast.value.map(function(token){
-                    return extract(token, scope, null);
+                    return x(token, scope, scope);
                 });
             } else if (ast.type === 'null') {
                 return null;
@@ -157,7 +160,7 @@ void function () {
                         break;
                     case 'array':
                         result = context = select[i].value.map(function(token){
-                            return extract(token, scope, null);
+                            return x(token, scope, scope);
                         });
                         break;
                     case 'group':
@@ -195,8 +198,12 @@ void function () {
                     case 'index':
                         token = select[i].value;
 
+
+                        if (isExpression(token)) {
+                            index = expr(token, scope);
+                        } else
                         if (token.type === 'pointer' || token.type === 'array') {
-                            index = extract(token, scope, result);
+                            index = extract(token, scope, scope);
                         } else {
                             index = token.value;
                         }
@@ -322,6 +329,14 @@ void function () {
 
         function isPrimitive(target) {
             return target !== null && typeof target !== 'object';
+        }
+
+        var exprTokens = [
+            'expr', 'pow', 'add', 'sub', 'del', 'mul', 'mod', 'pos', 'neg'
+        ];
+
+        function isExpression(token) {
+           return exprTokens.indexOf(token.type) > -1;
         }
 
         function flatten() {

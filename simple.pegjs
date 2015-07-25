@@ -23,20 +23,22 @@ mod
     / pow
 
 pow
-    = left:pos ws* '^' ws* right:pow {return {type: 'pow', value:[left, right] }; }
-    / pos
+    = left:expr ws* '^' ws* right:pow {return {type: 'pow', value:[left, right] }; }
+    / expr
 
 pos
-    = '+' ws* value:expr {return {type: 'pos', value:value }; }
+    = '+' ws* value:val {return {type: 'pos', value:value}; }
     / neg
 
 neg
-    = '-' ws* value:expr {return {type: 'neg', value:value }; }
-    / expr
+    = '-' ws* value:val {return {type: 'neg', value:value}; }
+    / val
 
 expr
-    = target:(pointer / primitive / array) filters:filters* " " *{ return {type: 'expr', value:[target].concat(filters) }; }
-    / group
+    = target:(pos) filters:filters* " " * { return {type: 'expr', value:[target].concat(filters) }; }
+
+val
+    = pointer / primitive / array / group
 
 group
     = '(' ws* value:add ws* ')' {return {type: 'group', value: value}; }
@@ -109,7 +111,7 @@ path_literal
 index = '[' ' '* value:(path_list / path_index / path_range ) ' '* ']' { return {type:'index', value:value}; }
 
 path_index
-    = integer / string / pointer / array
+    = add
 
 path_range
     = start:(integer / pointer) '..' end:(integer / pointer)? { return {type: 'range', value:[start, end]}; };
@@ -121,7 +123,7 @@ list_items
     = " "* "," " "* value:(list_value) { return value; }
 
 list_value
-    = pointer / primitive / array
+    = add
 
 literal
     = a:[A-Za-z_$] b:([A-Za-z0-9_$]*) { return {type: 'literal', value: a + b.join('')}; }
