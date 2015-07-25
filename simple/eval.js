@@ -3,7 +3,7 @@ void function () {
 
     var parser = require('./parser.js');
 
-    exports.parser = parser;
+    exports.parse = parser.parse;
     exports.new = function(options) {
         return newEvaluator(options);
     };
@@ -64,12 +64,18 @@ void function () {
                 case 'expr':
                     value = extract(ast.value[0], scope, scope);
                     value = filter(ast.value.slice(1), value, scope);
-                    break;
-
+                    return value;
                 case 'group':
                     value = expr(ast.value, scope);
+                    return value;
+                case 'not':
+                    return !expr(ast.value, scope);
+                case 'pos':
+                    return +expr(ast.value, scope);
                     break;
-
+                case 'neg':
+                    return -expr(ast.value, scope);
+                    break;
                 default:
                     left = expr(ast.value[0], scope, true);
                     right = expr(ast.value[1], scope, true);
@@ -81,7 +87,7 @@ void function () {
 
             value = flatten(value);
 
-            var precedence = ['mod', 'del', 'mul', 'sub', 'add'];
+            var precedence = ['pow', 'mod', 'del', 'mul', 'sub', 'add'];
             var op, i, result;
 
             while (precedence.length || value.length > 1) {
@@ -104,6 +110,9 @@ void function () {
                             break;
                         case 'mod':
                             result = left % right;
+                            break;
+                        case 'pow':
+                            result = Math.pow(left, right);
                             break;
                         break;
                     }
@@ -150,6 +159,9 @@ void function () {
                         result = context = select[i].value.map(function(token){
                             return extract(token, scope, null);
                         });
+                        break;
+                    case 'group':
+                        result = context = expr(select[i].value, scope);
                         break;
                     case 'literal':
                         token = select[i];
@@ -324,6 +336,7 @@ void function () {
             return flat;
         }
 
+        evaluate.expr = expr;
         return evaluate;
     }
 

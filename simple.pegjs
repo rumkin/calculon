@@ -1,11 +1,3 @@
-// Copula expression
-{
-    function pull(target, index) {
-        return target.map(function(value){
-            return value[index];
-        });
-    }
-}
 
 start
     = add
@@ -27,7 +19,19 @@ mul
     / mod
 
 mod
-    = left:expr ws* '%' ws* right:mod {return {type: 'mod', value:[left, right] }; }
+    = left:pow ws* '%' ws* right:mod {return {type: 'mod', value:[left, right] }; }
+    / pow
+
+pow
+    = left:pos ws* '^' ws* right:pow {return {type: 'pow', value:[left, right] }; }
+    / pos
+
+pos
+    = '+' ws* value:expr {return {type: 'pos', value:value }; }
+    / neg
+
+neg
+    = '-' ws* value:expr {return {type: 'neg', value:value }; }
     / expr
 
 expr
@@ -47,10 +51,10 @@ primitive
 	= float / integer / bool / null / string
 
 float
-	= sign:("+" / "-")? pre:number "." post:digit { return {type: 'float', value: parseFloat((sign ? sign[0] : '') + pre + '.' + post, 10)} ; }
+	= pre:number "." post:digit { return {type: 'float', value: parseFloat((sign ? sign[0] : '') + pre + '.' + post, 10)} ; }
 
 integer
-	= sign:("+" / "-")? pre:number { return {type: 'integer', value: parseInt((sign ? sign[0] : '') + pre, 10) }; }
+	=  pre:number { return {type: 'integer', value: parseInt(pre, 10) }; }
 
 number
 	= value:[0-9_]+ { return value.join('').replace(/_/g,''); }
@@ -85,7 +89,7 @@ escape
 	= '\\\\' / '\\t' / '\\n' / '\\.' / '\\r'
 
 pointer
-    = begin:(float / integer / string / bool / literal / array) path:(path)* { return {type: 'pointer', value: [begin].concat(path) }; }
+    = begin:(float / integer / string / bool / literal / array / group) path:(path)* { return {type: 'pointer', value: [begin].concat(path) }; }
 
 array
     = '[' ws* first:(list_value) others:(list_items)* ws* ']' { return { type: 'array', value: [first].concat(others) }; }

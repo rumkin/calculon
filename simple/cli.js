@@ -76,16 +76,22 @@ var scope = {
     },
     concat: function(target, value) {
         return target.concat(value);
+    },
+    times: function(v) {
+        var array = new Array(v);
+        while(v--) {
+            array[v] = String.fromCharCode(75 + v);
+        }
+        return array;
     }
 };
 
-//var start = Date.now();
-//for (var i = 0, l = 10000; i < l; i++) {
+var start = Date.now();
+var times = 100000;
+
+//for (var i = 0, l = 100; i < l; i++) {
 //    simple.eval(process.argv[2], scope)
 //}
-//var end = Date.now() - start;
-//
-//console.log('Time: %d sec, %d msec/ops', end/1000, end/l);
 
 var eval2 = simple.new({
     primitives: {
@@ -104,5 +110,17 @@ var eval2 = simple.new({
         }
     }
 });
+//
 
-console.log(eval2(process.argv[2], scope));
+var result = simple.parse(process.argv[2]);
+console.log(result);
+
+var out = eval2.expr(result, scope);
+for (var i = 0, l = times; i < l; i++) {
+    out = eval2.expr(result, scope);
+}
+
+console.log(out);
+
+var end = Date.now() - start;
+console.log('Time: %d sec, %d msec/ops', end/1000, end/times);
