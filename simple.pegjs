@@ -15,30 +15,10 @@
 }
 
 start
-    = expr
+    = _ value:expr _ { return value; }
 
-add
-    = left:sub ws* '+' ws* right:add { return {type: 'add', value:[left, right] }; }
-    / sub
-
-sub
-    = left:del ws* '-' ws* right:sub { return {type: 'sub', value:[left, right] }; }
-    / del
-
-del
-    = left:mul ws* '/' ws* right:del { return {type: 'del', value:[left, right] }; }
-    / mul
-
-mul
-    = left:mod ws* '*' ws* right:mul {return {type: 'mul', value:[left, right] }; }
-    / mod
-
-mod
-    = left:pow ws* '%' ws* right:mod {return {type: 'mod', value:[left, right] }; }
-    / pow
-
-pow
-    = left:expr ws* '^' ws* right:pow {return {type: 'pow', value:[left, right] }; }
+math
+    = left:expr _ op:operator _ right:math { return {type:op, value: [left, right]}; }
     / expr
 
 pos
@@ -50,14 +30,15 @@ neg
     / val
 
 expr
-    = target:(pos) filters:filters+ " "* { return {type: 'expr', value:[target].concat(filters) }; }
+    = target:(pos) filters:filters+ { return {type: 'expr', value:[target].concat(filters) }; }
+    / left:pos _ op:operator _ right:math { return {type:op, value: [left, right]}; }
     / pos
 
 val
     = pointer / array / group
 
 group
-    = '(' ws* value:add ws* ')' {return {type: 'group', value: value}; }
+    = '(' _ value:expr _ ')' {return {type: 'group', value: value}; }
 
 filters
     =  ws* "|" ws* filter:literal args:(filter_args)* {return {type: 'filter', value:[filter].concat(args) }};
@@ -142,7 +123,7 @@ path_literal
 index = '[' ' '* value:(path_list / path_index / path_range ) ' '* ']' { return value; }
 
 path_index
-    = value:add !(_ ',' / _ '..') { return {type:'index', value:value}; }
+    = value:math !(_ ',' / _ '..') { return {type:'index', value:value}; }
 
 path_range
     = start:(integer / pointer) '..' end:(integer / pointer)? { return {type: 'range', value:[start, end]}; };
@@ -154,15 +135,17 @@ list_items
     = " "* "," " "* value:(list_value) { return value; }
 
 list_value
-    = add
+    = math
 
 literal
     = a:[A-Za-z_$] b:([A-Za-z0-9_$]*) { return {type: 'literal', value: a + b.join('')}; }
 
-operators
+operator
     = '+'
     / '-'
     / '*'
     / '/'
     / '%'
     / '^'
+    / '=='
+    / '!='

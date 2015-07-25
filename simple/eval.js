@@ -10,7 +10,7 @@ void function () {
     exports.eval = exports.new();
 
     var exprTokens = [
-        'expr', 'pow', 'add', 'sub', 'del', 'mul', 'mod', 'pos', 'neg', 'group'
+        'expr', '^', '+', '-', '/', '*', '%', '==', '!=', 'pos', 'neg', 'group'
     ];
 
     function newEvaluator(options) {
@@ -93,7 +93,7 @@ void function () {
 
             value = flatten(value);
 
-            var precedence = ['pow', 'mod', 'del', 'mul', 'sub', 'add'];
+            var precedence = ['^', '%', '/', '*', '-', '+', '==', '!='];
             var op, i, result;
 
             while (precedence.length || value.length > 1) {
@@ -102,24 +102,29 @@ void function () {
                     left = value[i-1];
                     right = value[i+1];
                     switch(op) {
-                        case 'mul':
+                        case '*':
                             result = left * right;
                             break;
-                        case 'del':
+                        case '/':
                             result = left / right;
                             break;
-                        case 'sub':
+                        case '-':
                             result = left - right;
                             break;
-                        case 'add':
+                        case '+':
                             result = left + right;
                             break;
-                        case 'mod':
+                        case '%':
                             result = left % right;
                             break;
-                        case 'pow':
+                        case '^':
                             result = Math.pow(left, right);
                             break;
+                        case '==':
+                            result = (left === right);
+                            break;
+                        case '!=':
+                            result = (left !== right);
                         break;
                     }
 
@@ -291,7 +296,7 @@ void function () {
                         var newCtx;
                         var args = [];
                         while(items.length) {
-                            args.push(extract(items.shift(), scope, result));
+                            args.push(x(items.shift(), scope));
                         }
 
                         newCtx = result;
