@@ -9,9 +9,13 @@ void function () {
     };
     exports.eval = exports.new();
 
-    var exprTokens = [
-        'expr', '^', '+', '-', '/', '*', '%', '==', '!=', 'pos', 'neg', 'group'
+    var opTokens = [
+        '^', '+', '-', '/', '*', '%', '==', '!='
     ];
+
+    var exprTokens = [
+        'expr', 'pos', 'neg', 'group'
+    ].concat(opTokens);
 
     function newEvaluator(options) {
         options = options || {
@@ -90,10 +94,8 @@ void function () {
                     return -x(ast.value, scope);
                     break;
                 default:
-                    left = x(ast.value[0], scope);
-                    right = x(ast.value[1], scope);
+                    value = unwind(ast, scope);
 
-                    value = [left, ast.type, right];
             }
 
             if (inner || !Array.isArray(value)) return value;
@@ -103,7 +105,7 @@ void function () {
             var precedence = ['^', '%', '/', '*', '-', '+', '==', '!='];
             var op, i, result;
 
-            while (precedence.length || value.length > 1) {
+            while (precedence.length && value.length > 1) {
                 op = precedence.shift();
                 while (~(i = value.indexOf(op))) {
                     left = value[i-1];
@@ -377,12 +379,34 @@ void function () {
             return result;
         }
 
+        function unwind(ast, scope) {
+            var left = ast.value[0];
+            var right = ast.value[1];
+
+            var result = [
+                x(left, scope),
+                ast.type
+            ];
+
+            if (isOperator(right)) {
+                result = result.concat(unwind(right, scope));
+            } else {
+                result.push(x(right, scope));
+            }
+
+            return result;
+        }
+
         function isPrimitive(target) {
             return target !== null && typeof target !== 'object';
         }
 
         function isExpression(token) {
            return exprTokens.indexOf(token.type) > -1;
+        }
+
+        function isOperator(token) {
+            return opTokens.indexOf(token.type) > -1;
         }
 
         function flatten() {

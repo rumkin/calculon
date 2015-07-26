@@ -152,23 +152,31 @@ describe('Simple parser', function(){
         test('"hello".reverse()', 'olleh');
     });
 
-    describe('Math', function() {
-        test('1 + 2', 3);
-        test('1 + 2', 3);
-        test('1 + -1', 0);
-        test('1 - -1', 2);
-        test('2 * 5', 10);
-        test('10 / 5', 2);
-        test('10 % 5', 0);
-        test('2 ^ 3', 8);
-        test('2 + 3 - 1 * 3', 2);
-        test('2 + foo', 2 + globalScope.foo);
-        test('foo - foo', 0);
-    });
+    describe('Operators', function () {
+        describe('Math', function() {
+            test('1 + 2', 3);
+            test('1 + 2', 3);
+            test('1 + -1', 0);
+            test('1 - -1', 2);
+            test('2 * 5', 10);
+            test('10 / 5', 2);
+            test('10 % 5', 0);
+            test('2 ^ 3', 8);
+            test('2 + 3 - 1 * 3', 2);
+            test('2 + foo', 2 + globalScope.foo);
+            test('foo - foo', 0);
+        });
 
-    describe('Logic', function(){
-        test('2 == 3', false);
-        test('2 != 3', true);
+        describe('Logic', function(){
+            test('2 == 3', false);
+            test('2 != 3', true);
+        });
+
+        describe('Order', function(){
+            test('1 + 2 == 3', true);
+            test('1 + 2 == 3 ^ 2', false);
+            test('1 + 3 ^ 2 + 1', 11);
+        });
     });
 
     describe('Filters', function(){
