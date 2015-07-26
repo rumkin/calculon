@@ -142,6 +142,15 @@ void function () {
                 return ast.value.map(function(token){
                     return x(token, scope, scope);
                 });
+            } else if (ast.type === 'object') {
+                return ast.value.reduce(function(result, pair) {
+                    var key = x(pair[0], scope);
+                    var value = x(pair[1]);
+
+                    result[key] = value;
+
+                    return result;
+                }, {});
             } else if (ast.type === 'null') {
                 return null;
             } else if (ast.type === 'undefined') {

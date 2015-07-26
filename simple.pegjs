@@ -22,15 +22,12 @@ math
     / expr
 
 pos
-    = '+' _ value:val {return {type: 'pos', value:value}; }
+    = '+' _ value:pointer {return {type: 'pos', value:value}; }
     / neg
 
 neg
-    = '-' _ value:val {return {type: 'neg', value:value}; }
-    / val
-
-val
-    = pointer / array / group
+    = '-' _ value:pointer {return {type: 'neg', value:value}; }
+    / pointer
 
 group
     = '(' _ value:expr _ ')' {return {type: 'group', value: value}; }
@@ -48,7 +45,7 @@ filter_args
     = " "+ value:(filter_arg) { return {type: 'arg', value: value}; }
 
 filter_arg
-    = pointer / primitive / array / group
+    = pointer
 
 primitive
 	= float / integer / bool / null / string
@@ -115,10 +112,24 @@ pointer
     / value:literal { return {type:'pointer', value: [value]}; }
 
 point
-    = primitive / array / group
+    = primitive / array / group / object
 
 array
     = '[' _ value:(arg_list _)? ']' { return {type: 'array', value: value ? value[0] : []}; }
+
+object
+    = '{' _ first:object_pair rest:(_ ',' _ object_pair)* _ '}' { return {type:'object', value: join(first, rest, 3)}; }
+    / '{' _ '}' { return {type:'object', value:[]}; }
+
+object_pair
+    = key:object_key _ ':' _ value:math { return [key, value] };
+
+object_key
+    = literal
+    / string
+    / float
+    / integer
+    / '[' value:math ']' {return value;}
 
 args
     = '(' _ value:(arg_list _)? ')' { return {type: 'args', value: value ? value[0] : []}; }

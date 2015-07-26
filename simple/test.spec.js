@@ -150,6 +150,10 @@ describe('Simple parser', function(){
         test('2 + 3 - 1 * 3', 2);
         test('2 + foo', 2 + globalScope.foo);
         test('foo - foo', 0);
+        test('{foo: "bar"}', {foo: "bar"});
+        test('{1.0: "bar"}', {1.0: "bar"});
+        test('{true: "bar"}', {true: "bar"});
+        test('{[1 + 2]: "bar"}', {3: "bar"});
     });
 
     describe('Logic', function(){
