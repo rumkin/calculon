@@ -78,6 +78,9 @@ var globalScope = {
     plural: function(v, one, many) {
         return v + ' ' + (v === 1 ? one : many);
     },
+    glue: function() {
+        return Array.prototype.join.call(arguments, '');
+    },
     foo: 1,
     obj: {
         a: 1,
@@ -94,9 +97,7 @@ var globalScope = {
             city: 'Chicago',
             street: '453'
         }
-    },
-    name: 'Jane',
-    age: 21
+    }
 };
 
 function test(str, expect, scope) {
@@ -140,7 +141,8 @@ describe('Simple parser', function(){
         test('{[1 + 2]: "bar"}', {3: "bar"});
         test('{foo: {bar: true}}', {foo: {bar:true}});
         test('`Hello ${user.profile.name}!`', 'Hello John!');
-        test('`This is ${name}! She is ${age | plural "year" "years"} old!`', 'This is Jane! She is 21 years old!');
+        test('`Hello ${user.profile.name}!`', 'Hello John!');
+        test('`This is ${ "Jane" }! She is ${21 | plural "year" "years"} old!`', 'This is Jane! She is 21 years old!');
     });
 
     describe('Primitives methods', function(){
@@ -175,6 +177,9 @@ describe('Simple parser', function(){
         test('1 | add 2 | sub 1 | mul 2', 4);
         test('1 | add (2 + 1|mul 2)', 5);
         test('0 | or "ok"', 'ok');
+        test('0 | or "ok"', 'ok');
+        test('"foo" | glue "bar"', 'foobar');
+        test('"foo" | glue "bar" _ "baz"', 'barfoobaz');
     });
 
     describe('Values extraction', function(){

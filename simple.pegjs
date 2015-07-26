@@ -81,7 +81,8 @@ filters
     =  _ "|" _ filter:literal args:(filter_args)* {return {type: 'filter', value:[filter].concat(args) }};
 
 filter_args
-    = " "+ value:(filter_arg) { return {type: 'arg', value: value}; }
+    = " "+ '_' { return {type: 'place'}; }
+    / " "+ value:(filter_arg) { return value; }
 
 filter_arg
     = pointer
@@ -136,7 +137,7 @@ template
     = '`' str:(template_item)* '`' { return token('template', joinTemplate(str)); }
 
 template_item
-    = '${' value:math '}' { return value; }
+    = '${' _ value:math _ '}' { return value; }
     / value:( escape / '\\$' / '\\`' / [^`] ) { return value; }
 
 string
@@ -158,7 +159,7 @@ pointer
     / value:literal { return {type:'pointer', value: [value]}; }
 
 point
-    = primitive / template / array / group / object
+    = primitive / template / array / object / group
 
 array
     = '[' _ value:(arg_list _)? ']' { return {type: 'array', value: value ? value[0] : []}; }

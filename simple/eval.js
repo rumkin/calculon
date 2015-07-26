@@ -43,16 +43,23 @@ void function () {
                 }
 
                 filter = scope[name];
+                var placeholder = -1;
 
-                args = token.value.slice(1).map(function(token){
-                    if (token.value.type === 'group') {
-                        return expr(token.value.value, scope);
+                args = token.value.slice(1).map(function(token, i){
+                    if (token.type === 'place') {
+                        placeholder = i;
+                        return null;
                     } else {
-                        return extract(token.value, scope, scope);
+                        return x(token, scope);
                     }
                 });
 
-                args.unshift(value);
+                if (placeholder > -1) {
+                    args[placeholder] = value;
+                } else {
+                    args.unshift(value);
+                }
+
                 value = filter.apply(scope, args);
                 filters.shift();
             }
