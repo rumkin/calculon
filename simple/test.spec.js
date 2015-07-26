@@ -79,7 +79,19 @@ var globalScope = {
     obj: {
         a: 1,
         b: 2
-    }
+    },
+    user: {
+        profile: {
+            name: 'John',
+            surname: 'Smith',
+            age: 54,
+            gender: 'male'
+        },
+        location: {
+            city: 'Chicago',
+            street: '453'
+        }
+    },
 };
 
 function test(str, expect, scope) {
@@ -108,6 +120,8 @@ describe('Simple parser', function(){
     describe('Values', function() {
         test('obj', globalScope.obj);
         test('1', 1);
+        test('1_000', 1000);
+        test('1_000 + 10_000 + 100_000', 111000);
         test('1.5', 1.5);
         test('-1', -1);
         test('false', false);
@@ -151,10 +165,19 @@ describe('Simple parser', function(){
         test('0 | or "ok"', 'ok');
     });
 
+    describe('Values extraction', function(){
+        test('obj.a', globalScope.obj.a);
+        test('obj["a"]', globalScope.obj.a);
+        test('[1,2,3][0 + 1]', 2);
+        test('[1,2,3][0 + 1]', 2);
+    });
+
     describe('Decomposition', function(){
         test('[1, 2][1, 0]', [2, 1]);
         test('[1, 2][[0, 1]]', [1, 2]);
+        test('[1, 2, 3, 4, 5][1..3]', [2, 3]);
         test('obj["a", "b"]', {a:globalScope.obj.a, b:globalScope.obj.b});
+        test('user["profile":["name"], "location":["city"]]', {profile:{name: "John"}, location: {"city": "Chicago"}});
     });
 
     describe('Nests', function(){

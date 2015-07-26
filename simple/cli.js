@@ -27,10 +27,23 @@ var scope = {
         },
         bigList: bigList
     },
+    user: {
+        profile: {
+            name: 'John',
+            surname: 'Smith',
+            age: 54,
+            gender: 'male'
+        },
+        location: {
+            city: 'Chicago',
+            street: '453'
+        }
+    },
     c: {
         f: {
             x: 1
-        }
+        },
+        j: 1
     },
     'true': {
         not: function(){

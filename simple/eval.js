@@ -153,7 +153,7 @@ void function () {
             var result = scope;
 
             var select = ast.value.slice();
-            var token, index, i, l, items;
+            var token, index, i, l, items, item;
             i = -1;
             l = select.length;
 
@@ -278,11 +278,20 @@ void function () {
                         var keys = [];
 
                         while (items.length) {
-                            index = x(items[0], scope);
+                            item = items[0];
+                            if (item.type === 'decomp') {
+                                index = x(item.value[0], scope);
 
-                            if (result.hasOwnProperty(index)) {
-                                keys.push(index);
+                                if (result.hasOwnProperty(index)) {
+                                    keys.push({from:index, keys: x(item.value[1], scope)});
+                                }
+                            } else {
+                                index = x(items[0], scope);
+                                if (result.hasOwnProperty(index)) {
+                                    keys.push(index);
+                                }
                             }
+
 
                             items.shift();
                         }
@@ -316,18 +325,30 @@ void function () {
             function pick(keys, result) {
                 var isArray = Array.isArray(result);
                 var list = isArray ? [] : {};
-                var i, l, key;
+                var i, l, key, val;
                 i = -1;
                 l = keys.length;
 
                 while (++i < l) {
                     key = keys[i];
 
-                    if (isArray) {
-                        list.push(result[key]);
+                    if (typeof key === 'object') {
+                        if (result.hasOwnProperty(key.from) && typeof result[key.from] === 'object') {
+                            val = pick(key.keys, result[key.from]);
+                        } else {
+                            val = {};
+                        }
+                        key = key.from;
                     } else {
-                        list[key] = result[key];
+                        val = result[key];
                     }
+
+                    if (isArray) {
+                        list.push(val);
+                    } else {
+                        list[key] = val;
+                    }
+
                 }
 
                 return list;
