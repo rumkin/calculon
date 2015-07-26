@@ -54,7 +54,7 @@
 }
 
 start
-    = _ value:math _ { return value; }
+    = _ value:(expr / math) _ { return value; }
 
 math
     = left:expr _ op:operator _ right:math { return token(op, [left, right]); }
@@ -71,15 +71,13 @@ neg
 group
     = '(' _ value:expr _ ')' {return token('group', value); }
 
-code
-    = '@{' _ value:expr _ '}' { return token('ast', value); }
-
 expr
-    = target:(pos) filters:filters+ { return token('expr', [target].concat(filters)); }
+    = valuable
     / left:pos _ op:operator _ right:math { return token(op, [left, right]); }
-    / code
     / pos
 
+valuable
+    = target:(pos) filters:filters+ { return token('expr', [target].concat(filters)); }
 
 filters
     =  __ "|" _ filter:literal args:(filter_args)* {return token('filter', [filter].concat(args))};
@@ -138,15 +136,13 @@ _
    = ws*
 
 __
-  = '\n'
-  / '\r\n'
-  / _
+  = ('\n' / '\r\n' / ws)*
 
 template
     = '`' str:(template_item)* '`' { return token('template', joinTemplate(str)); }
 
 template_item
-    = '${' _ value:math _ '}' { return value; }
+    = '${' _ value:expr _ '}' { return value; }
     / value:( escape / '\\$' / '\\`' / [^`] ) { return value; }
 
 string
@@ -168,10 +164,13 @@ pointer
     / value:literal { return token('pointer', [value]); }
 
 point
-    = primitive / template / array / object / group
+    = primitive / template / array / object / group / ast
 
 array
     = '[' _ value:(arg_list _)? ']' { return token('array', value ? value[0] : []); }
+
+ast
+    = '@{' _ value:expr _ '}' { return token('ast', value); }
 
 object
     = '{' __ first:object_pair rest:(__ ',' __ object_pair)* __ '}' { return token('object', join(first, rest, 3)); }
