@@ -117,7 +117,7 @@ function dump(str, expect, scope) {
 
 describe('Simple parser', function(){
 
-    describe('Values', function() {
+    describe('Values & types', function() {
         test('obj', globalScope.obj);
         test('1', 1);
         test('1_000', 1000);
@@ -129,6 +129,11 @@ describe('Simple parser', function(){
         test('null', null);
         test('"ok"', 'ok');
         test('\'ok\'', 'ok');
+        test('{foo: "bar"}', {foo: "bar"});
+        test('{1.0: "bar"}', {1.0: "bar"});
+        test('{true: "bar"}', {true: "bar"});
+        test('{[1 + 2]: "bar"}', {3: "bar"});
+        test('{foo: {bar: true}}', {foo: {bar:true}});
     });
 
     describe('Primitives methods', function(){
@@ -150,10 +155,6 @@ describe('Simple parser', function(){
         test('2 + 3 - 1 * 3', 2);
         test('2 + foo', 2 + globalScope.foo);
         test('foo - foo', 0);
-        test('{foo: "bar"}', {foo: "bar"});
-        test('{1.0: "bar"}', {1.0: "bar"});
-        test('{true: "bar"}', {true: "bar"});
-        test('{[1 + 2]: "bar"}', {3: "bar"});
     });
 
     describe('Logic', function(){
