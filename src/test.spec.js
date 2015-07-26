@@ -140,6 +140,7 @@ describe('Simple parser', function(){
         test('{true: "bar"}', {true: "bar"});
         test('{[1 + 2]: "bar"}', {3: "bar"});
         test('{foo: {bar: true}}', {foo: {bar:true}});
+        test('{foo\n:\n{bar: true}}', {foo: {bar:true}});
         test('`Hello ${user.profile.name}!`', 'Hello John!');
         test('`Hello ${user.profile.name}!`', 'Hello John!');
         test('`This is ${ "Jane" }! She is ${21 | plural "year" "years"} old!`', 'This is Jane! She is 21 years old!');
@@ -166,6 +167,9 @@ describe('Simple parser', function(){
             test('2 + foo', 2 + globalScope.foo);
             test('foo - foo', 0);
             test('[1, 2]...[3, 4]', [1, 2, 3, 4]);
+            test('1...[2]', [1, 2]);
+            test('1...2', [1, 2]);
+            test('1|add 2 + 1|add 2', 6);
         });
 
         describe('Logic', function(){
@@ -177,6 +181,7 @@ describe('Simple parser', function(){
             test('1 + 2 == 3', true);
             test('1 + 2 == 3 ^ 2', false);
             test('1 + 3 ^ 2 + 1', 11);
+            test('1 + 3 ^ (2 + 1)', 28);
         });
     });
 
@@ -186,9 +191,31 @@ describe('Simple parser', function(){
         test('1 | add 2 | sub 1 | mul 2', 4);
         test('1 | add (2 + 1|mul 2)', 5);
         test('0 | or "ok"', 'ok');
-        test('0 | or "ok"', 'ok');
+        test('false | or "ok"', 'ok');
+        test('true | or false', true);
         test('"foo" | glue "bar"', 'foobar');
         test('"foo" | glue "bar" _ "baz"', 'barfoobaz');
+    });
+
+    describe('AST', function(){
+       test('@{a}', {
+           type:'ast',
+           value: {
+               type: 'pointer',
+               value: [
+                   {
+                       type: 'literal',
+                       value: 'a',
+                       line: 1,
+                       column: 3
+                   }
+               ],
+               line: 1,
+               column: 3
+           },
+           line: 1,
+           column: 1
+       });
     });
 
     describe('Values extraction', function(){

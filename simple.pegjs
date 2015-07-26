@@ -54,34 +54,38 @@
 }
 
 start
-    = _ value:expr _ { return value; }
+    = _ value:math _ { return value; }
 
 math
-    = left:expr _ op:operator _ right:math { return {type:op, value: [left, right]}; }
+    = left:expr _ op:operator _ right:math { return token(op, [left, right]); }
     / expr
 
 pos
-    = '+' _ value:pointer {return {type: 'pos', value:value}; }
+    = '+' _ value:pointer {return token('pos', value); }
     / neg
 
 neg
-    = '-' _ value:pointer {return {type: 'neg', value:value}; }
+    = '-' _ value:pointer {return token('neg', value); }
     / pointer
 
 group
-    = '(' _ value:expr _ ')' {return {type: 'group', value: value}; }
+    = '(' _ value:expr _ ')' {return token('group', value); }
+
+code
+    = '@{' _ value:expr _ '}' { return token('ast', value); }
 
 expr
-    = target:(pos) filters:filters+ { return {type: 'expr', value:[target].concat(filters) }; }
-    / left:pos _ op:operator _ right:math { return {type:op, value: [left, right]}; }
+    = target:(pos) filters:filters+ { return token('expr', [target].concat(filters)); }
+    / left:pos _ op:operator _ right:math { return token(op, [left, right]); }
+    / code
     / pos
 
 
 filters
-    =  _ "|" _ filter:literal args:(filter_args)* {return {type: 'filter', value:[filter].concat(args) }};
+    =  __ "|" _ filter:literal args:(filter_args)* {return token('filter', [filter].concat(args))};
 
 filter_args
-    = " "+ '_' { return {type: 'place'}; }
+    = " "+ '_' { return token('place'); }
     / " "+ value:(filter_arg) { return value; }
 
 filter_arg
@@ -91,10 +95,10 @@ primitive
 	= float / integer / bool / null / string
 
 float
-	= pre:number "." post:digits { return {type: 'float', value: parseFloat(pre + '.' + post, 10)} ; }
+	= pre:number "." post:digits { return token('float', parseFloat(pre + '.' + post, 10)) ; }
 
 integer
-	=  pre:(number / digits) { return {type: 'integer', value: parseInt(pre, 10) }; }
+	=  pre:(number / digits) { return token('integer', parseInt(pre, 10)); }
 
 number
 	= head:(number_head / digit) tail:('_' trinity)* {
@@ -102,7 +106,7 @@ number
 	}
 
 // symbol
-//    = '@' value:literal { return {type: 'symbol', value: value.value}; }
+//    = '@' value:literal { return token('symbol', value.value); }
 
 number_head
     = value:(digit digit digit?) { return value.join(''); }
@@ -117,14 +121,14 @@ digit
     = [0-9]
 
 bool
-	= "true" { return {type: 'bool', value: true}; }
-	/ "false" { return {type: 'bool', value: false}; }
+	= "true" { return token('bool', true); }
+	/ "false" { return token('bool', false); }
 
 null
-	= "null" { return {type:'null'}; }
+	= "null" { return token('null'); }
 
 undefined
-    = "undefined" { return {type:'undefined'}; }
+    = "undefined" { return token('undefined'); }
 
 ws "whitespace"
     = ' '
@@ -132,6 +136,11 @@ ws "whitespace"
     / '\v'
 _
    = ws*
+
+__
+  = '\n'
+  / '\r\n'
+  / _
 
 template
     = '`' str:(template_item)* '`' { return token('template', joinTemplate(str)); }
@@ -141,45 +150,45 @@ template_item
     / value:( escape / '\\$' / '\\`' / [^`] ) { return value; }
 
 string
-    = '"' str:(escape / '\\"' / [^\\"\n] )* '"' { return {type: 'string', value: str.join('')}; }
-    / "'" str:(escape / "\\'" / [^\\'\n] )* "'" { return {type: 'string', value: str.join('')}; }
+    = double_quoted
+    / single_quoted
 
 double_quoted
-    = '"' str:(escape / '\\"' / [^\\"\n] )* '"' { return {type: 'string', value: str.join('')}; }
+    = '"' str:(escape / '\\"' / [^\\"\n] )* '"' { return token('string', str.join('')); }
 
 single_quoted
-    = "'" str:(escape / "\\'" / [^\\'\n] )* "'" { return {type: 'string', value: str.join('')}; }
+    = "'" str:(escape / "\\'" / [^\\'\n] )* "'" { return token('string', str.join('')); }
 
 escape
 	= '\\\\' / '\\t' / '\\n' / '\\.' / '\\r'
 
 pointer
-    = begin:(point / literal) path:(path)+ { return {type: 'pointer', value: [begin].concat(path) }; }
+    = begin:(point / literal) path:(path)+ { return token('pointer', [begin].concat(path) ); }
     / point
-    / value:literal { return {type:'pointer', value: [value]}; }
+    / value:literal { return token('pointer', [value]); }
 
 point
     = primitive / template / array / object / group
 
 array
-    = '[' _ value:(arg_list _)? ']' { return {type: 'array', value: value ? value[0] : []}; }
+    = '[' _ value:(arg_list _)? ']' { return token('array', value ? value[0] : []); }
 
 object
-    = '{' _ first:object_pair rest:(_ ',' _ object_pair)* _ '}' { return {type:'object', value: join(first, rest, 3)}; }
-    / '{' _ '}' { return {type:'object', value:[]}; }
+    = '{' __ first:object_pair rest:(__ ',' __ object_pair)* __ '}' { return token('object', join(first, rest, 3)); }
+    / '{' __ '}' { return {type:'object', value:[]}; }
 
 object_pair
-    = key:object_key _ ':' _ value:math { return [key, value] };
+    = key:object_key __ ':' __ value:math { return [key, value] };
 
 object_key
     = literal
     / string
     / float
     / integer
-    / '[' value:math ']' {return value;}
+    / '[' _ value:math _ ']' { return value; }
 
 args
-    = '(' _ value:(arg_list _)? ')' { return {type: 'args', value: value ? value[0] : []}; }
+    = '(' _ value:(arg_list _)? ')' { return token('args', value ? value[0] : []); }
 
 arg_list
     = first:arg_item _ others:(',' _ others:arg_item _)* { return join(first, others, 2); }
@@ -198,13 +207,13 @@ path_literal
 index = '[' _ value:(path_list / path_index / path_range) _  ']' { return value }
 
 path_index
-    = value:(math) !(_ ',' / _ '..') { return {type:'index', value:value}; }
+    = value:(math) !(_ ',' / _ '..') { return token('index', value); }
 
 path_range
-    = start:(integer / pointer) '..' end:(integer / pointer)? { return {type: 'range', value:[start, end]}; };
+    = start:(integer / pointer) '..' end:(integer / pointer)? { return token('range', [start, end]); };
 
 path_list
-    = first:( list_value ) others:( _ list_items )+ { return { type: 'list', value: join(first, others, 1) }; }
+    = first:( list_value ) others:( _ list_items )+ { return token('list', join(first, others, 1)); }
     / value:list_nest { return {type: 'list', value:[value] };}
 
 list_items
@@ -215,10 +224,10 @@ list_value
     / math
 
 list_nest
-    = key:(string / integer / literal / group) _ ':' _ names:(array) { return {type:'decomp', value: [key, names]} }
+    = key:(string / integer / literal / group) _ ':' _ names:(array) { return token('decomp', [key, names]) }
 
 literal
-    = a:[A-Za-z_$] b:([A-Za-z0-9_$]*) { return {type: 'literal', value: a + b.join('')}; }
+    = a:[A-Za-z_$] b:([A-Za-z0-9_$]*) { return token('literal', a + b.join('')); }
 
 operator
     = '+'

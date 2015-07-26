@@ -165,6 +165,8 @@ void function () {
                 }).join('');
             } else if (ast.type === 'null') {
                 return null;
+            } else if (ast.type === 'ast') {
+                return ast;
             } else if (ast.type === 'undefined') {
                 return undefined;
             } else if (ast.type !== 'pointer') {
