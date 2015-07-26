@@ -165,6 +165,7 @@ describe('Simple parser', function(){
             test('2 + 3 - 1 * 3', 2);
             test('2 + foo', 2 + globalScope.foo);
             test('foo - foo', 0);
+            test('[1, 2]...[3, 4]', [1, 2, 3, 4]);
         });
 
         describe('Logic', function(){

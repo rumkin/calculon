@@ -10,7 +10,7 @@ void function () {
     exports.eval = exports.new();
 
     var opTokens = [
-        '^', '+', '-', '/', '*', '%', '==', '!='
+        '^', '+', '-', '/', '*', '%', '==', '!=', '...'
     ];
 
     var exprTokens = [
@@ -72,7 +72,7 @@ void function () {
         }
 
         function x(token, scope, context) {
-            return isExpression(token) ? expr(token, scope) : extract(token, scope, arguments.length > 2 ? context : scope);
+            return isExprTok(token) ? expr(token, scope) : extract(token, scope, arguments.length > 2 ? context : scope);
         }
 
         // Something very odd but it's 07:09. So who cares...
@@ -89,10 +89,8 @@ void function () {
                     return value;
                 case 'pos':
                     return +x(ast.value, scope);
-                    break;
                 case 'neg':
                     return -x(ast.value, scope);
-                    break;
                 default:
                     value = unwind(ast, scope);
 
@@ -100,9 +98,7 @@ void function () {
 
             if (inner || !Array.isArray(value)) return value;
 
-            value = flatten(value);
-
-            var precedence = ['^', '%', '/', '*', '-', '+', '==', '!='];
+            var precedence = ['^', '%', '/', '*', '-', '+', '==', '!=', '...'];
             var op, i, result;
 
             while (precedence.length && value.length > 1) {
@@ -135,6 +131,9 @@ void function () {
                         case '!=':
                             result = (left !== right);
                         break;
+                        case '...':
+                            result = concat(left, right);
+                            break;
                     }
 
                     value.splice(i, 2);
@@ -230,7 +229,7 @@ void function () {
                         token = select[i].value;
 
 
-                        if (isExpression(token)) {
+                        if (isExprTok(token)) {
                             index = expr(token, scope);
                         } else if (token.type === 'pointer' || token.type === 'array') {
                             index = extract(token, scope, scope);
@@ -388,7 +387,7 @@ void function () {
                 ast.type
             ];
 
-            if (isOperator(right)) {
+            if (isOpTok(right)) {
                 result = result.concat(unwind(right, scope));
             } else {
                 result.push(x(right, scope));
@@ -397,28 +396,24 @@ void function () {
             return result;
         }
 
+        function concat(a, b) {
+            if (!Array.isArray(a)) {
+                a = [a];
+            }
+
+            return a.concat(b);
+        }
+
         function isPrimitive(target) {
             return target !== null && typeof target !== 'object';
         }
 
-        function isExpression(token) {
+        function isExprTok(token) {
            return exprTokens.indexOf(token.type) > -1;
         }
 
-        function isOperator(token) {
+        function isOpTok(token) {
             return opTokens.indexOf(token.type) > -1;
-        }
-
-        function flatten() {
-            var flat = [];
-            for (var i = 0; i < arguments.length; i++) {
-                if (arguments[i] instanceof Array) {
-                    flat.push.apply(flat, flatten.apply(this, arguments[i]));
-                } else {
-                    flat.push(arguments[i]);
-                }
-            }
-            return flat;
         }
 
         evaluate.x = x;

@@ -166,6 +166,8 @@ module.exports= (function() {
         peg$c129 = { type: "literal", value: "==", description: "\"==\"" },
         peg$c130 = "!=",
         peg$c131 = { type: "literal", value: "!=", description: "\"!=\"" },
+        peg$c132 = "...",
+        peg$c133 = { type: "literal", value: "...", description: "\"...\"" },
 
         peg$currPos          = 0,
         peg$reportedPos      = 0,
@@ -2704,6 +2706,15 @@ module.exports= (function() {
                     } else {
                       s0 = peg$FAILED;
                       if (peg$silentFails === 0) { peg$fail(peg$c131); }
+                    }
+                    if (s0 === peg$FAILED) {
+                      if (input.substr(peg$currPos, 3) === peg$c132) {
+                        s0 = peg$c132;
+                        peg$currPos += 3;
+                      } else {
+                        s0 = peg$FAILED;
+                        if (peg$silentFails === 0) { peg$fail(peg$c133); }
+                      }
                     }
                   }
                 }
