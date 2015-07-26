@@ -75,6 +75,9 @@ var globalScope = {
     bool: function(value) {
         return !! value;
     },
+    plural: function(v, one, many) {
+        return v + ' ' + (v === 1 ? one : many);
+    },
     foo: 1,
     obj: {
         a: 1,
@@ -92,6 +95,8 @@ var globalScope = {
             street: '453'
         }
     },
+    name: 'Jane',
+    age: 21
 };
 
 function test(str, expect, scope) {
@@ -134,6 +139,8 @@ describe('Simple parser', function(){
         test('{true: "bar"}', {true: "bar"});
         test('{[1 + 2]: "bar"}', {3: "bar"});
         test('{foo: {bar: true}}', {foo: {bar:true}});
+        test('`Hello ${user.profile.name}!`', 'Hello John!');
+        test('`This is ${name}! She is ${age | plural "year" "years"} old!`', 'This is Jane! She is 21 years old!');
     });
 
     describe('Primitives methods', function(){

@@ -12,6 +12,45 @@
 
         return result;
     }
+
+    function token(type, value) {
+        return {
+            type: type,
+            value: value,
+            line: line(),
+            column: column()
+        };
+    }
+
+    function joinTemplate(values) {
+        var i = -1;
+        var l = values.length;
+        var result = [];
+        var current, item;
+        current = '';
+        while(++i < l) {
+            item = values[i];
+            if (typeof item === 'string') {
+                if (current !== null) {
+                    current += item;
+                } else {
+                    current = item;
+                }
+            } else {
+                if (current !== null) {
+                    result.push({type: 'string', value:current});
+                    current = null;
+                }
+                result.push(item);
+            }
+
+            if (i === l - 1 && current) {
+                result.push({type: 'string', value: current});
+            }
+        }
+
+        return result;
+    }
 }
 
 start
@@ -93,6 +132,13 @@ ws "whitespace"
 _
    = ws*
 
+template
+    = '`' str:(template_item)* '`' { return token('template', joinTemplate(str)); }
+
+template_item
+    = '${' value:math '}' { return value; }
+    / value:( escape / '\\$' / '\\`' / [^`] ) { return value; }
+
 string
     = '"' str:(escape / '\\"' / [^\\"\n] )* '"' { return {type: 'string', value: str.join('')}; }
     / "'" str:(escape / "\\'" / [^\\'\n] )* "'" { return {type: 'string', value: str.join('')}; }
@@ -112,7 +158,7 @@ pointer
     / value:literal { return {type:'pointer', value: [value]}; }
 
 point
-    = primitive / array / group / object
+    = primitive / template / array / group / object
 
 array
     = '[' _ value:(arg_list _)? ']' { return {type: 'array', value: value ? value[0] : []}; }

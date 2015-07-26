@@ -151,6 +151,10 @@ void function () {
 
                     return result;
                 }, {});
+            } else if (ast.type === 'template') {
+                return ast.value.map(function(token){
+                    return x(token, scope, scope);
+                }).join('');
             } else if (ast.type === 'null') {
                 return null;
             } else if (ast.type === 'undefined') {
