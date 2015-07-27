@@ -234,6 +234,7 @@ describe('Simple parser', function(){
         test('[1, 2, 3, 4, 5][1..3]', [2, 3]);
         test('obj["a", "b"]', {a:globalScope.obj.a, b:globalScope.obj.b});
         test('user["profile":["name"], "location":["city"]]', {profile:{name: "John"}, location: {"city": "Chicago"}});
+        test('{a:1,b:2,c:3}["a","b"]', {a:1, b:2});
     });
 
     describe('Nests', function(){

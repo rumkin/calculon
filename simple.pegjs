@@ -54,13 +54,13 @@
 }
 
 start
-    = _ value:(expr) _ EOF { return value; }
+    = _ value:(math) _ EOF { return value; }
 
 EOF
     = !.
 
 math
-    = left:expr _ op:operator _ right:math { return token(op, [left, right]); }
+    = left:expr __ op:operator __ right:math { return token(op, [left, right]); }
     / expr
 
 pos
@@ -71,23 +71,16 @@ neg
     = '-' _ value:pointer {return token('neg', value); }
     / pointer
 
-group
-    = '(' _ value:start _ ')' {return token('group', value); }
-
 expr
-    = valuable
-    / left:pos _ op:operator _ right:math { return token(op, [left, right]); }
-    / pos
-
-valuable
     = target:(pos) filters:filters+ { return token('expr', [target].concat(filters)); }
+    / pos
 
 filters
     =  __ "|" _ filter:literal args:(filter_args)* {return token('filter', [filter].concat(args))};
 
 filter_args
-    = " "+ '_' { return token('place'); }
-    / " "+ value:(filter_arg) { return value; }
+    = space+ '_' { return token('place'); }
+    / space+ value:(filter_arg) { return value; }
 
 filter_arg
     = pointer
@@ -131,21 +124,25 @@ null
 undefined
     = "undefined" { return token('undefined'); }
 
-ws "whitespace"
+space "whitespace"
     = ' '
     / '\t'
     / '\v'
+
+linebreak
+    = '\n'
+    / '\r\n'
 _
-   = ws*
+   = space*
 
 __
-  = ('\n' / '\r\n' / ws)*
+  = (linebreak / space)*
 
 template
     = '`' str:(template_item)* '`' { return token('template', joinTemplate(str)); }
 
 template_item
-    = '${' _ value:start _ '}' { return value; }
+    = '${' _ value:math _ '}' { return value; }
     / value:( escape / '\\$' / '\\`' / [^`] ) { return value; }
 
 string
@@ -197,9 +194,9 @@ array
     = '[' _ value:(arg_list _)? ']' { return token('array', value ? value[0] : []); }
 
 ast
-    = '@{' _ value:expr _ '}' { return token('ast', value); }
+    = '@{' _ value:math _ '}' { return token('ast', value); }
 
-object
+object "Object"
     = '{' __ first:object_pair rest:(__ ',' __ object_pair)* __ '}' { return token('object', join(first, rest, 3)); }
     / '{' __ '}' { return {type:'object', value:[]}; }
 
@@ -212,6 +209,9 @@ object_key
     / float
     / integer
     / '[' _ value:math _ ']' { return value; }
+
+group
+    = '(' _ value:math _ ')' {return token('group', value); }
 
 args
     = '(' _ value:(arg_list _)? ')' { return token('args', value ? value[0] : []); }
@@ -252,7 +252,7 @@ list_value
 list_nest
     = key:(string / integer / literal / group) _ ':' _ names:(array) { return token('decomp', [key, names]) }
 
-literal
+literal "Literal"
     = a:[A-Za-z_$] b:([A-Za-z0-9_$]*) { return token('literal', a + b.join('')); }
 
 operator

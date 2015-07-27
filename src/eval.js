@@ -197,6 +197,14 @@ void function () {
                             return x(token, scope, scope);
                         });
                         break;
+                    case 'object':
+                        result = context = select[i].value.reduce(function(result, pair) {
+                            var key = x(pair[0], scope);
+                            result[key] = x(pair[1]);
+
+                            return result;
+                        }, {});
+                        break;
                     case 'group':
                         result = context = expr(select[i].value, scope);
                         break;
