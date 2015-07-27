@@ -54,7 +54,7 @@
 }
 
 start
-    = _ value:(expr / math) _ { return value; }
+    = _ value:(expr) _ { return value; }
 
 math
     = left:expr _ op:operator _ right:math { return token(op, [left, right]); }
@@ -69,7 +69,7 @@ neg
     / pointer
 
 group
-    = '(' _ value:expr _ ')' {return token('group', value); }
+    = '(' _ value:start _ ')' {return token('group', value); }
 
 expr
     = valuable
@@ -90,7 +90,7 @@ filter_arg
     = pointer
 
 primitive
-	= float / integer / bool / null / string
+	= float / integer / bool / null / string / regex
 
 float
 	= pre:number "." post:digits { return token('float', parseFloat(pre + '.' + post, 10)) ; }
@@ -142,7 +142,7 @@ template
     = '`' str:(template_item)* '`' { return token('template', joinTemplate(str)); }
 
 template_item
-    = '${' _ value:expr _ '}' { return value; }
+    = '${' _ value:start _ '}' { return value; }
     / value:( escape / '\\$' / '\\`' / [^`] ) { return value; }
 
 string
@@ -157,6 +157,30 @@ single_quoted
 
 escape
 	= '\\\\' / '\\t' / '\\n' / '\\.' / '\\r'
+
+regex
+    = '/' value:(regex_escape / [^\/])* '/' flags:( regex_flags* ) { return token('regex', [value.join(''), flags.join('')]); }
+
+regex_escape
+    = '\\/'
+    / '\\\\'
+    / '\\['
+    / '\\^'
+    / '\\.'
+    / '\\$'
+    / '\\*'
+    / '\\+'
+    / '\\?'
+    / '\\('
+    / '\\)'
+    / '\\{'
+    / '\\|'
+
+regex_flags
+    = 'i'
+    / 'g'
+    / 'm'
+    / 'u'
 
 pointer
     = begin:(point / literal) path:(path)+ { return token('pointer', [begin].concat(path) ); }

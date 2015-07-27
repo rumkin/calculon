@@ -144,6 +144,7 @@ describe('Simple parser', function(){
         test('`Hello ${user.profile.name}!`', 'Hello John!');
         test('`Hello ${user.profile.name}!`', 'Hello John!');
         test('`This is ${ "Jane" }! She is ${21 | plural "year" "years" } old!`', 'This is Jane! She is 21 years old!');
+        test('/^hello$/', /^hello$/);
     });
 
     describe('Primitives methods', function(){
@@ -170,6 +171,7 @@ describe('Simple parser', function(){
             test('1...[2]', [1, 2]);
             test('1...2', [1, 2]);
             //test('1|add 2 + 1|add 2', 6);
+            //test('(1|add 2 + 1|add 2)', 6);
         });
 
         describe('Logic', function(){
