@@ -54,7 +54,10 @@
 }
 
 start
-    = _ value:(expr) _ { return value; }
+    = _ value:(expr) _ EOF { return value; }
+
+EOF
+    = !.
 
 math
     = left:expr _ op:operator _ right:math { return token(op, [left, right]); }

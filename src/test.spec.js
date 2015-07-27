@@ -195,8 +195,8 @@ describe('Simple parser', function(){
         test('0 | or "ok"', 'ok');
         test('false | or "ok"', 'ok');
         test('true | or false', true);
-        test('"foo" | glue "bar"', 'foobar');
-        test('"foo" | glue "bar" _ "baz"', 'barfoobaz');
+        test('"a" | glue "b" "c"', 'abc');
+        test('"b" | glue "a" _ "c"', 'abc');
         test('1\n\t| add 1\n\t| add 1\n\t| add 1', 4);
     });
 
