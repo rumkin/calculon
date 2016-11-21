@@ -303,7 +303,7 @@ void function () {
                         if (typeof end !== 'number') return [];
 
                         context = result;
-                        result = result.slice(start, end);
+                        result = result.slice(start, end + 1);
 
                         break;
                     case 'list':

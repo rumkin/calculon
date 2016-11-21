@@ -7,7 +7,7 @@
     "should": "~7.0.2"
   },
   "scripts": {
-    "build-simple": "node peg.js build simple.pegjs > src/parser.js",
-    "test-simple": "node_modules/.bin/mocha src/test.spec.js"
+    "build": "node peg.js build simple.pegjs > src/parser.js",
+    "test": "node_modules/.bin/mocha src/test.spec.js"
   }
 }

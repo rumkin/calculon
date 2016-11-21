@@ -142,8 +142,9 @@ describe('Simple parser', function(){
         test('{foo: {bar: true}}', {foo: {bar:true}});
         test('{foo\n:\n{bar: true}}', {foo: {bar:true}});
         test('`Hello ${user.profile.name}!`', 'Hello John!');
-        test('`Hello ${user.profile.name}!`', 'Hello John!');
+        test('`Hello \\`${user.profile.name}\\`!`', 'Hello `John`!');
         test('`This is ${ "Jane" }! She is ${21 | plural "year" "years" } old!`', 'This is Jane! She is 21 years old!');
+        test('`This is ${ [[{a: 1}, {b: 1}]][0][1].b | add (1 + 3) }`', 'This is 5');
         test('/^hello$/', /^hello$/);
     });
 
@@ -163,6 +164,7 @@ describe('Simple parser', function(){
             test('2 * 5', 10);
             test('10 / 5', 2);
             test('10 % 5', 0);
+            test('10 + (1 * 2) - (16 / (((2 ^ 2))))', 8);
             test('2 ^ 3', 8);
             test('2 + 3 - 1 * 3', 2);
             test('2 + foo', 2 + globalScope.foo);
@@ -170,8 +172,9 @@ describe('Simple parser', function(){
             test('[1, 2]...[3, 4]', [1, 2, 3, 4]);
             test('1...[2]', [1, 2]);
             test('1...2', [1, 2]);
-            //test('1|add 2 + 1|add 2', 6);
-            //test('(1|add 2 + 1|add 2)', 6);
+            test('1|add 2 + 1|add 2', 6);
+            test('(1|add 2 + 1|add 2)', 6);
+            test('(1|add (2 | add 3))', 6);
         });
 
         describe('Logic', function(){
@@ -231,7 +234,8 @@ describe('Simple parser', function(){
     describe('Decomposition', function(){
         test('[1, 2][1, 0]', [2, 1]);
         test('[1, 2][[0, 1]]', [1, 2]);
-        test('[1, 2, 3, 4, 5][1..3]', [2, 3]);
+        test('[1, 2, 3, 4, 5][1..3]', [2, 3, 4]);
+        test('[1, 2, 3, 4, 5][0..1]', [1, 2]);
         test('obj["a", "b"]', {a:globalScope.obj.a, b:globalScope.obj.b});
         test('user["profile":["name"], "location":["city"]]', {profile:{name: "John"}, location: {"city": "Chicago"}});
         test('{a:1,b:2,c:3}["a","b"]', {a:1, b:2});

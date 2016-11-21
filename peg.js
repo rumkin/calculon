@@ -3,7 +3,7 @@ var fs = require('fs');
 
 switch (process.argv[2]) {
 	case 'test':
-		var parser = peg.buildParser(fs.readFileSync(process.argv[3], "utf8"));
+		var parser = peg.generate(fs.readFileSync(process.argv[3], "utf8"));
 		try {
 			var result = parser.parse(fs.readFileSync(process.argv[4], "utf8"));
 		} catch (err) {
@@ -18,7 +18,6 @@ switch (process.argv[2]) {
 		console.log('>', JSON.stringify(result, null, 4));
 		break;
 	case 'build':
-		var source = peg.buildParser(fs.readFileSync(process.argv[3], "utf8"), {output: 'source'});
+		var source = peg.generate(fs.readFileSync(process.argv[3], "utf8"), {output: 'source'});
 		console.log('module.exports=', source + ';');
 }
-

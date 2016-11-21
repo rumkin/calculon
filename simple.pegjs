@@ -14,11 +14,12 @@
     }
 
     function token(type, value) {
+        let loca = location();
         return {
             type: type,
             value: value,
-            line: line(),
-            column: column()
+            line: loca.start.line,
+            column: loca.start.column
         };
     }
 
@@ -143,7 +144,9 @@ template
 
 template_item
     = '${' _ value:math _ '}' { return value; }
-    / value:( escape / '\\$' / '\\`' / [^`] ) { return value; }
+    / value:( escape / '\\$' ) { return value; }
+    / value:( '\\`' ) { return value.slice(1); }
+    / [^`]
 
 string
     = double_quoted
@@ -156,7 +159,11 @@ single_quoted
     = "'" str:(escape / "\\'" / [^\\'\n] )* "'" { return token('string', str.join('')); }
 
 escape
-	= '\\\\' / '\\t' / '\\n' / '\\.' / '\\r'
+	= '\\\\' { return '\\\\'; }
+  / '\\t' { return '\t'; }
+  / '\\n' { return '\n'; }
+  / '\\.' { return '.' }
+  / '\\r' { return '\r'; }
 
 regex
     = '/' value:(regex_escape / [^\/])* '/' flags:( regex_flags* ) { return token('regex', [value.join(''), flags.join('')]); }
