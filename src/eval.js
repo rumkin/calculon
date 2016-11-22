@@ -306,6 +306,12 @@ void function () {
                         result = result.slice(start, end + 1);
 
                         break;
+                    case 'last':
+                        if (! Array.isArray(result) || ! result.length) return;
+
+                        context = result;
+                        result = result[result.length - 1];
+                        break;
                     case 'list':
                         items = select[i].value.slice();
                         var keys = [];

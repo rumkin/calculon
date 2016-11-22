@@ -229,6 +229,8 @@ describe('Simple parser', function(){
         test('obj["a"]', globalScope.obj.a);
         test('[1,2,3][0 + 1]', 2);
         test('[1,2,3][0 + 1]', 2);
+        test('[1,2,3][*]', 3);
+        test('[][*]', undefined);
     });
 
     describe('Decomposition', function(){

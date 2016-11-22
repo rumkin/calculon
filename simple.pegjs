@@ -237,7 +237,7 @@ path
 path_literal
     = '.' value:literal { return value; }
 
-index = '[' _ value:(path_list / path_index / path_range) _  ']' { return value }
+index = '[' _ value:(path_list / path_index / path_range / path_last) _  ']' { return value }
 
 path_index
     = value:(math) !(_ ',' / _ '..') { return token('index', value); }
@@ -248,6 +248,9 @@ path_range
 path_list
     = first:( list_value ) others:( _ list_items )+ { return token('list', join(first, others, 1)); }
     / value:list_nest { return {type: 'list', value:[value] };}
+
+path_last
+    = '*' { return token('last'); }
 
 list_items
     = "," _ value:(list_value) { return value; }
