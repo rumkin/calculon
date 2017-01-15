@@ -1,5 +1,5 @@
 var should = require('should');
-var Simple = require('./eval.js');
+var Simple = require('..');
 
 function add(a, b) {
     return a + b;
@@ -61,26 +61,28 @@ var simple = Simple.new({
                 return result;
             }
         }
+    },
+    filters: {
+        add: filter(add),
+        sub: filter(sub),
+        mul: filter(mul),
+        del: filter(del),
+        or: function(v, alt) {
+            return v || alt;
+        },
+        bool: function(value) {
+            return !! value;
+        },
+        plural: function(v, one, many) {
+            return v + ' ' + (v === 1 ? one : many);
+        },
+        glue: function() {
+            return Array.prototype.join.call(arguments, '');
+        },
     }
 });
 
 var globalScope = {
-    add: filter(add),
-    sub: filter(sub),
-    mul: filter(mul),
-    del: filter(del),
-    or: function(v, alt) {
-        return v || alt;
-    },
-    bool: function(value) {
-        return !! value;
-    },
-    plural: function(v, one, many) {
-        return v + ' ' + (v === 1 ? one : many);
-    },
-    glue: function() {
-        return Array.prototype.join.call(arguments, '');
-    },
     foo: 1,
     obj: {
         a: 1,

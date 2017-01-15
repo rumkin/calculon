@@ -19,7 +19,8 @@ void function () {
 
     function newEvaluator(options) {
         options = options || {
-            primitives: false
+            primitives: false,
+            filters: {},
         };
 
         function evaluate(expression, scope) {
@@ -42,11 +43,11 @@ void function () {
                 // get literal value
                 name = token.value[0].value;
 
-                if (typeof scope[name] !== 'function') {
+                if (typeof options.filters[name] !== 'function') {
                     return;
                 }
 
-                filter = scope[name];
+                filter = options.filters[name];
                 var placeholder = -1;
 
                 args = token.value.slice(1).map(function(token, i){

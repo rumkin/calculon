@@ -8,6 +8,27 @@
   },
   "scripts": {
     "build": "node peg.js build simple.pegjs > src/parser.js",
-    "test": "node_modules/.bin/mocha src/test.spec.js"
-  }
+    "test": "mocha src/test.spec.js"
+  },
+  "name": "calculon",
+  "version": "1.0.0",
+  "description": "Expressions parser and compiler",
+  "main": "src/eval.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rumkin/calculon.git"
+  },
+  "keywords": [
+    "expressions",
+    "parser",
+    "evaluation",
+    "jsexpressions",
+    "dsl"
+  ],
+  "author": "rumkin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rumkin/calculon/issues"
+  },
+  "homepage": "https://github.com/rumkin/calculon#readme"
 }
