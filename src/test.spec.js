@@ -201,6 +201,7 @@ describe('Simple parser', function(){
         test('"a" | glue "b" "c"', 'abc');
         test('"b" | glue "a" _ "c"', 'abc');
         test('1\n\t| add 1\n\t| add 1\n\t| add 1', 4);
+        test('1|nofilter|add 1', undefined);
     });
 
     describe('AST', function(){
