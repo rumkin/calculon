@@ -79,6 +79,13 @@ var simple = Simple.new({
         glue: function() {
             return Array.prototype.join.call(arguments, '');
         },
+        gte(value, test, a, b) {
+            if (value >= test) {
+              return a;
+            } else {
+              return b;
+            }
+        }
     }
 });
 
@@ -101,13 +108,13 @@ var globalScope = {
         }
     },
     isOk: true,
+    n: 2,
 };
 
 function test(str, expect, scope) {
-    var ast = simple.parse(str);
     scope = scope || globalScope;
     it('' + str + ' = ' + JSON.stringify(expect), function(){
-        var result = simple.x(ast, scope);
+        var result = simple(str, scope);
         should(result).be.eql(expect);
     });
 }
@@ -144,6 +151,7 @@ describe('Simple parser', function(){
         test('{[1 + 2]: "bar"}', {3: "bar"});
         test('{foo: {bar: true}}', {foo: {bar:true}});
         test('{foo\n:\n{bar: true}}', {foo: {bar:true}});
+        test('{ background: n | gte 1 "red" "green", border: `${ [0, 1, 2][n] }px solid black`}', {background: 'red', border: '2px solid black'});
         test('`Hello ${user.profile.name}!`', 'Hello John!');
         test('`Hello \\`${user.profile.name}\\`!`', 'Hello `John`!');
         test('`This is ${ "Jane" }! She is ${21 | plural "year" "years" } old!`', 'This is Jane! She is 21 years old!');
@@ -200,6 +208,7 @@ describe('Simple parser', function(){
         test('1 | add 2 | sub 1 | mul 2', 4);
         test('1 | add (2 + 1|mul 2)', 5);
         test('0 | or "ok"', 'ok');
+        test('1 | gte 2 "greater" "less"', 'less');
         test('false | or "ok"', 'ok');
         test('true | or false', true);
         test('"a" | glue "b" "c"', 'abc');
@@ -252,5 +261,9 @@ describe('Simple parser', function(){
         test('[1, 2][1, 0]', [2, 1]);
         test('[1, 2][[0, 1]]', [1, 2]);
         test('obj["a", "b"]', {a:globalScope.obj.a, b:globalScope.obj.b});
+    });
+
+    describe('Scopes', function() {
+        test('this.obj.a', globalScope.obj.a);
     });
 });

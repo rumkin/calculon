@@ -12,6 +12,17 @@ from expressions.
 Calculon is fault tolerant and tries not to produce any exceptions on runtime.
 So undefined filters and variables are normal and produces undefined values.
 
+```calculon
+1 | add 2 | mul 5 == 15 // -> true
+"b" | concat "a" _ "c" | toUpperCase // -> "ABC"
+`Hi there ${ n | plural "time" "times" }!` -> Hi there 1 time.
+{
+  background: n | gte 1 "red" "green",
+  border: `${ [0, 2][n] } + px solid`
+} // -> {background: red, border: '2px solid'}
+[1, 2, 3, 4][0..n] // -> [0, 1]
+```
+
 ## Installation
 
 Via npm:
@@ -225,3 +236,12 @@ eval('isOk.not()', {isOk: true}); //-> false
 Calculon doesn't allow to overwrite object constructors (or even get it) so it's
 safe to use with untrusted code. Also calculon is read only and it has no
 constructions to modify values or variables.
+
+## Credentials
+
+Parser is made with [PegJS](https://www.npmjs.com/package/pegjs) powerful
+and simple parser generator.
+
+## License
+
+MIT.

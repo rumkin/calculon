@@ -25,9 +25,11 @@ void function () {
 
         function evaluate(expression, scope) {
             var ast = parser.parse(expression);
-            scope = scope || {};
+            var innerScope = Object.create(scope || {});
 
-            return x(ast, scope);
+            innerScope.this = innerScope;
+
+            return x(ast, innerScope);
         }
 
         function filter(filters, value, scope) {
@@ -154,7 +156,7 @@ void function () {
             } else if (ast.type === 'object') {
                 return ast.value.reduce(function(result, pair) {
                     var key = x(pair[0], scope);
-                    var value = x(pair[1]);
+                    var value = x(pair[1], scope);
 
                     result[key] = value;
 
@@ -201,7 +203,7 @@ void function () {
                     case 'object':
                         result = context = select[i].value.reduce(function(result, pair) {
                             var key = x(pair[0], scope);
-                            result[key] = x(pair[1]);
+                            result[key] = x(pair[1], scope);
 
                             return result;
                         }, {});
@@ -214,7 +216,6 @@ void function () {
                         index = token.value;
 
                         // Access to prototype's constructor is declined
-
                         if (result === null || result === undefined) {
                             return undefined;
                         } else if (! isPrimitive(result)) {
@@ -241,10 +242,10 @@ void function () {
                     case 'index':
                         token = select[i].value;
 
-
                         if (isExprTok(token)) {
                             index = expr(token, scope);
                         } else if (token.type === 'pointer' || token.type === 'array') {
+                            // throw new Error('Test there')
                             index = extract(token, scope, scope);
                         } else {
                             index = token.value;
