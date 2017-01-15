@@ -14,12 +14,12 @@
     }
 
     function token(type, value) {
-        let loca = location();
+        var loc = location();
         return {
             type: type,
             value: value,
-            line: loca.start.line,
-            column: loca.start.column
+            line: loc.start.line,
+            column: loc.start.column
         };
     }
 
