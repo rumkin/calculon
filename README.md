@@ -76,7 +76,7 @@ Currently calculon supports decimal numbers only.
 
 #### Strings
 
-Strings should be surrounded with single brace, double brace or akut:
+Strings should be surrounded with single quote, double quote or akut:
 
 ```calculon
 "Hello"
