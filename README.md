@@ -217,9 +217,11 @@ var eval = Calculon.new({
 
 eval('true.not()'); //-> false
 eval('false.not()'); //-> true
+eval('isOk.not()', {isOk: true}); //-> false
 ```
 
 ## Security
 
 Calculon doesn't allow to overwrite object constructors (or even get it) so it's
-safe to use with untrusted code.
+safe to use with untrusted code. Also calculon is read only and it has no
+constructions to modify values or variables.

@@ -48,7 +48,7 @@ var simple = Simple.new({
         },
         boolean: {
             not: function() {
-                return this === true ? false : true;
+                return this === true || (this instanceof Boolean && this == true) ? false : true;
             }
         },
         string: {
@@ -99,7 +99,8 @@ var globalScope = {
             city: 'Chicago',
             street: '453'
         }
-    }
+    },
+    isOk: true,
 };
 
 function test(str, expect, scope) {
@@ -152,6 +153,7 @@ describe('Simple parser', function(){
 
     describe('Primitives methods', function(){
         test('false.not()', true);
+        test('isOk.not()', false);
         test('0.add(4).mul(5)', 20);
         test('1.2.add(0.8)', 2);
         test('"hello".reverse()', 'olleh');
