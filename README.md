@@ -34,8 +34,8 @@ npm i calculon
 ### Usage
 
 ```javascript
-const Calculone = require('calculone');
-const calc = Calculone.new({
+const Calculon = require('calculon');
+const calc = Calculon.new({
   primitives: {
     number: {
       add(a, b) {
