@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "node peg.js build simple.pegjs > src/parser.js",
-    "test": "mocha src/test.spec.js"
+    "test": "mocha test/test.spec.js"
   },
   "name": "calculon",
   "version": "1.0.0",
