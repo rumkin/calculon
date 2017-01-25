@@ -7,7 +7,7 @@
     "should": "~7.0.2"
   },
   "scripts": {
-    "build": "node peg.js build simple.pegjs > src/parser.js",
+    "build": "node peg.js build calculon.pegjs > src/parser.js",
     "test": "mocha test/test.spec.js"
   },
   "name": "calculon",
