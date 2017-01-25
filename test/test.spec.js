@@ -145,10 +145,11 @@ describe('Simple parser', function(){
         test('null', null);
         test('"ok"', 'ok');
         test('\'ok\'', 'ok');
-        test('{foo: "bar"}', {foo: "bar"});
-        test('{1.0: "bar"}', {1.0: "bar"});
-        test('{true: "bar"}', {true: "bar"});
-        test('{[1 + 2]: "bar"}', {3: "bar"});
+        test(':key', 'key');
+        test('{foo: "bar"}', {foo: 'bar'});
+        test('{1.0: "bar"}', {1.0: 'bar'});
+        test('{true: "bar"}', {true: 'bar'});
+        test('{[1 + 2]: "bar"}', {3: 'bar'});
         test('{foo: {bar: true}}', {foo: {bar:true}});
         test('{foo\n:\n{bar: true}}', {foo: {bar:true}});
         test('{ background: n | gte 1 "red" "green", border: `${ [0, 1, 2][n] }px solid black`}', {background: 'red', border: '2px solid black'});
@@ -212,7 +213,7 @@ describe('Simple parser', function(){
         test('false | or "ok"', 'ok');
         test('true | or false', true);
         test('"a" | glue "b" "c"', 'abc');
-        test('"b" | glue "a" _ "c"', 'abc');
+        test('"b" | glue "a" _ :c', 'abc');
         test('1\n\t| add 1\n\t| add 1\n\t| add 1', 4);
         test('1|nofilter|add 1', undefined);
     });
@@ -255,6 +256,8 @@ describe('Simple parser', function(){
         test('obj["a", "b"]', {a:globalScope.obj.a, b:globalScope.obj.b});
         test('user["profile":["name"], "location":["city"]]', {profile:{name: "John"}, location: {"city": "Chicago"}});
         test('{a:1,b:2,c:3}["a","b"]', {a:1, b:2});
+        test('{a:1,b:2,c:3}[:a]', 1);
+        test('{:a::a}', {a:'a'});
     });
 
     describe('Nests', function(){

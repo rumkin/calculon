@@ -82,6 +82,7 @@ Strings should be surrounded with single quote, double quote or akut:
 "Hello"
 'Hello'
 `Hello`
+:Hello
 ```
 
 Strings with akut could contain calculon expressions to evaluate:
@@ -194,6 +195,7 @@ To pass filtered value to exact position in filters arguments use underscore:
 
 ```
 "b" | concat "a" _ "c" // -> "abc"
+users | map :name // users=[{name:'john'}, {name: 'jack'}, {name: 'jim'}] -> ['john', 'jack', 'jim']
 ```
 
 #### Define filter

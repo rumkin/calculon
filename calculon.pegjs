@@ -149,14 +149,18 @@ template_item
     / [^`]
 
 string
-    = double_quoted
-    / single_quoted
+    = double_quoted_str
+    / single_quoted_str
+    / symbol
 
-double_quoted
+double_quoted_str
     = '"' str:(escape / '\\"' / [^\\"\n] )* '"' { return token('string', str.join('')); }
 
-single_quoted
+single_quoted_str
     = "'" str:(escape / "\\'" / [^\\'\n] )* "'" { return token('string', str.join('')); }
+
+symbol
+    = ":" str:([A-Za-z0-9_]+) { return token('string', str.join('')); }
 
 escape
 	= '\\\\' { return '\\\\'; }
